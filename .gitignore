@@ -20,6 +20,7 @@ __pycache__/
 # large artifacts
 rag_index/**
 #data/*
+data/downloads/**
 !data/README.md
 # (Optionally keep a tiny demo tracked)
 !data/                 # <-- unignore the directory itself
