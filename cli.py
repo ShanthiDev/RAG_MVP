@@ -8,7 +8,7 @@ from src.rag.answer import ask_openai, bullets_have_single_citation, citations
 EMB_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 DATA_ROOT  = Path("data")
 INDEX_ROOT = Path("rag_index")
-DATASET    = "bund_pfas"     # e.g., "bund_pfas", "tz_studium"
+DATASET    = "demo"
 QUESTION   = "What are the harmful effects of PFAS?"
 REBUILD    = False            # set False to reuse an existing index
 CHUNK_SIZE = 900

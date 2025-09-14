@@ -19,10 +19,12 @@ __pycache__/
 
 # large artifacts
 rag_index/**
-data/**
+#data/*
 !data/README.md
 # (Optionally keep a tiny demo tracked)
-#!data/demo/**
+!data/                 # <-- unignore the directory itself
+!data/demo/            # <-- unignore the demo folder
+!data/demo/**
 #!data/demo/*.pdf
 
 # notebooks (optional)
@@ -45,5 +47,8 @@ Thumbs.db
 .env.swp
 .env.*
 *.env.*
+
+# streamlit secrets
+.streamlit/
 
 
