@@ -56,10 +56,15 @@ st.title("🔎 What do they say? - RAG MVP")
 with st.sidebar:
     st.header("Dataset")
     dataset = st.text_input("Folder under /data", "demo")
-    st.caption("Put PDFs in data/<dataset> and build an index locally first.")
+    st.caption("PDFs must be placed in data/<dataset>. The demo dataset is already included.")
+
     st.divider()
-    st.header("Prompts (read-only for now)")
-    st.text("System + guide enforce verbatim quotes in original language.\nSee src/rag/answer.py")
+    st.header("Navigation")
+    st.markdown(
+        "Want to see or adjust the exact prompts used by the app?\n\n"
+        "👉 Go to the [📜 Prompts page](Prompts)."
+    )
+
 
 question = st.text_area("Your question", "What are the harmful effects of PFAS?")
 run = st.button("Run")
@@ -81,7 +86,12 @@ if run:
             st.markdown(f"- **{h['source']}** p.{h['page']} · score={h.get('rerank', h['score']):.3f}")
 
     with st.spinner("Asking OpenAI..."):
-        ans = ask_openai(question, final_hits)
+        ans = ask_openai(
+            question,
+            final_hits,
+            system_prompt=st.session_state.get("system_prompt"),
+            user_guide=st.session_state.get("user_guide"),
+        )
 
     st.markdown("## Answer")
     st.markdown(ans)
