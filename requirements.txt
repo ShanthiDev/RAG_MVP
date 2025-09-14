@@ -1,0 +1,26 @@
+# Core
+numpy
+pandas
+pypdf
+requests
+python-dotenv
+
+# Embeddings & Models
+sentence-transformers
+faiss-cpu
+scikit-learn   # nötig für sentence-transformers
+
+# OpenAI API
+openai
+
+# Plotting & Visualization
+matplotlib
+seaborn
+plotly
+
+# UI
+streamlit
+
+# Optional: Notebook/VS Code support
+ipykernel
+jupyter 

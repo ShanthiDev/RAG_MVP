@@ -1,0 +1,49 @@
+# --- Python venv ---
+.venv/
+venv/
+
+# --- Bytecode & Cache ---
+__pycache__/
+*.py[cod]
+*.pkl
+
+# python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# env & secrets
+.env
+*.env
+
+# large artifacts
+rag_index/**
+data/**
+!data/README.md
+# (Optionally keep a tiny demo tracked)
+#!data/demo/**
+#!data/demo/*.pdf
+
+# notebooks (optional)
+notebooks/**
+
+# OS/IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# caches
+*.cache/
+.cache/
+
+# editor swap/backup files
+*.swp
+*.swo
+*~
+.env.swp
+.env.*
+*.env.*
+
+
