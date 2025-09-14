@@ -13,8 +13,35 @@ from pathlib import Path
 from src.rag.store import load_index
 from src.rag.retrieval import search_raw, retrieve, K_FIRST, K_FINAL
 from src.rag.answer import ask_openai, citations
+from src.rag.chunking import load_pdf_chunks
+from src.rag.store import build_index, load_index
 
 EMB_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+
+@st.cache_resource(show_spinner=False)
+def get_model():
+    # cache the SentenceTransformer model across reruns
+    from sentence_transformers import SentenceTransformer
+    return SentenceTransformer(EMB_MODEL_NAME)
+
+def ensure_index(dataset: str):
+    """Load index if present; otherwise build from data/<dataset> (demo-sized only)."""
+    data_dir  = Path("data") / dataset
+    index_dir = Path("rag_index") / dataset
+    index_dir.mkdir(parents=True, exist_ok=True)
+
+    if (index_dir / "faiss.index").exists():
+        # fast path: index already there
+        return load_index(index_dir, EMB_MODEL_NAME)
+
+    # build path: small demo only (OK for Streamlit Cloud)
+    chunks = load_pdf_chunks(data_dir)
+    if not chunks:
+        raise RuntimeError(f"No PDFs in {data_dir}. Add a small demo set.")
+    # pass a cached encoder by name inside build_index (it will instantiate internally);
+    # if you want to force reuse of get_model(), you can modify build_index to accept a model instance.
+    return build_index(chunks, EMB_MODEL_NAME, index_dir)
+
 
 def get_api_key():
     try:
@@ -23,12 +50,12 @@ def get_api_key():
         return os.getenv("OPENAI_API_KEY", "")
 
 
-st.set_page_config(page_title="What do they say? — RAG MVP", layout="wide")
-st.title("🔎 What do they say? — RAG MVP")
+st.set_page_config(page_title="What do they say? - RAG MVP", layout="wide")
+st.title("🔎 What do they say? - RAG MVP")
 
 with st.sidebar:
     st.header("Dataset")
-    dataset = st.text_input("Folder under /data", "bund_pfas")
+    dataset = st.text_input("Folder under /data", "demo")
     st.caption("Put PDFs in data/<dataset> and build an index locally first.")
     st.divider()
     st.header("Prompts (read-only for now)")
@@ -42,13 +69,8 @@ if run:
         st.error("Please set OPENAI_API_KEY (.env or Streamlit Secrets).")
         st.stop()
 
-    index_dir = Path("rag_index") / dataset
-    if not (index_dir / "faiss.index").exists():
-        st.error(f"No index found at {index_dir}. Build it locally with cli.py first.")
-        st.stop()
-
-    with st.status("Loading index & model...", expanded=False):
-        store, emb_model, emb, metas = load_index(index_dir, EMB_MODEL_NAME)
+    with st.status("Loading/Building index...", expanded=False):
+        store, emb_model, emb, metas = ensure_index(dataset)
 
     with st.spinner("Searching & reranking..."):
         hits, _ = search_raw(store, emb_model, question, K_FIRST)
