@@ -5,7 +5,7 @@
 
 ## 2. Summary
 ### Goal:  
-The goal is to develop the POC into a production-grade, MLOps-first RAG system that ingests public NGO documents (e.g., Greenpeace, WWF), retrieves verifiable quotes with page-accurate citations, and exposes them via an API plus a lightweight UI for journalists and policy analysts.
+The goal is to develop the MVP into a production-grade, MLOps-first RAG system that ingests public NGO documents (e.g., Greenpeace, WWF), retrieves verifiable quotes with page-accurate citations, and exposes them via an API plus a lightweight UI for journalists and policy analysts.
 
 ### Problem:  
 Positions of NGOs are scattered across PDFs and reports; finding reliable, citable sentences is slow and error-prone.
@@ -59,7 +59,14 @@ Sharply reduced lead time for corpus updates, measurable reliability via automat
 
 ## 5. MLOps Technical Architecture
 - **Data & artifacts:** **DVC** for raw → processed → embeddings → index.  
-- **Vector store (adapter):** **FAISS** for local prototyping; **Qdrant** for cloud/production.  
+- **Vector store (adapter):** **FAISS** for local prototyping; **Qdrant** for cloud/production.
+- **Storage layout (MVP → Prod):**
+  - **Raw documents (PDFs):** Cloud Storage (object storage, e.g., AWS S3, Azure Blob, GCP Cloud Storage) as DVC remote to keep GitHub/Streamlit lean.
+  - **Processed chunks & metadata:** Stored + versioned in Cloud Storage via DVC.
+  - **Embeddings:** Persisted as `.npy`/Parquet in Cloud Storage, tracked with DVC.
+  - **Index (FAISS, MVP):** Versioned artifact in Cloud Storage via DVC (pulled on deploy).
+  - **Vector store (Prod):** Qdrant (managed/cloud) as primary store; Cloud Storage remains source-of-truth + cold backups.
+  - **Local caches:** Ephemeral cache on API/Streamlit services for runtime speed; rebuild from Cloud Storage/DVC when needed.
 - **Serving:** **FastAPI** (`/search`, `/answer`, `/health`) + **Streamlit** UI.  
 - **Containerization & CI/CD:** **Docker** (+compose for dev), **GitHub Actions** (lint/test → DVC pull → index build → golden-set eval → image build/push → deploy to Cloud Run/Fly.io).  
 - **Observability:** **Prometheus** metrics → **Grafana** dashboards (requests, p50/p95 latency, error rate).  
@@ -74,18 +81,32 @@ Sharply reduced lead time for corpus updates, measurable reliability via automat
 ```mermaid
 flowchart LR
   subgraph Repo
-    GIT[Git code] --- DVC[DVC data]
+    GIT[Git code] --- DVC[DVC metadata]
   end
+
   INJ[Ingestion Job] --> RAW[Raw PDFs]
   RAW --> EXT[Extract & Chunk] --> PROC[Processed Chunks]
-  PROC --> EMB[Embeddings] --> IDX[Index]
+  PROC --> EMB[Embeddings] --> IDX[FAISS Index - MVP]
+
+  subgraph Storage
+    CS[Cloud Storage: S3, Azure Blob, GCS]
+  end
+
+  RAW -.-> CS
+  PROC -.-> CS
+  EMB -.-> CS
+  IDX -.-> CS
+
   API[FastAPI] -->|vector search| IDX
   UI[Streamlit] -->|queries| API
   LLM[LLM] <---> API
+
   CI[GitHub Actions] -->|build+test+deploy| API
   MON[Prometheus/Grafana] <-->|metrics| API
   DRIFT[Evidently Reports] --> MON
-  QD[Qdrant cloud] -. adapter .- IDX
+
+  QD[Qdrant - Prod] -. adapter .- IDX
+  QD -. persist .- CS
 ```
 
 ## 6. GitHub POC and Data Sources
