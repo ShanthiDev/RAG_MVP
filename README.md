@@ -21,8 +21,12 @@ Fast, auditable answers with exact quotes and sources; full traceability for edi
 ### MLOPs Implementation:
 This project upgrades a working local RAG MVP into a **production-ready, MLOps-centric system** for retrieving **verifiable quotes** from public NGO documents. The current prototype ingests PDFs, chunks text, computes embeddings (SentenceTransformers), retrieves via a vector store, optionally re-ranks, applies MMR for diversity, and produces answers with **per-bullet citations** (`[Doc p.X]`).  
 We will make the system **reproducible, observable, and continuously deployable**: **DVC** for data/artifact lineage, **Docker** for containerization, and **GitHub Actions** for CI/CD with automated **retrieval quality gates** (Recall@k, nDCG) on a curated golden set. **Prometheus/Grafana** provide runtime monitoring; **Evidently** generates drift reports for inputs/outputs; **MLflow** tracks experiments, parameters, metrics, and artifacts.  
-Deployments are **cloud-first** (e.g. **Google Cloud Run**, **Fly.io**), with a modular vector-store **adapter** supporting **FAISS (local)** and **Qdrant (cloud/production)**.
+Deployments are **cloud-first**, with a modular vector-store **adapter** supporting **FAISS (local)** and **Qdrant (cloud/production)**.
 The system completes the RAG loop by using an **LLM** (currently via the **OpenAI API**) to generate concise, source-cited answers from the top-retrieved document chunks. This enables users to get ready-to-use, quote-level outputs directly from their queries, rather than just a list of matching snippets. A **lightweight Streamlit UI** is provided for interactive querying and exploration, making the system accessible to journalists and analysts with no coding required.
+While the NGO corpus defines the real-world use-case at the heart of this project, it presents **challenges for automated evaluation** due to the lack of clearly defined golden Q&A pairs.  
+To enable **scalable and measurable MLOps workflows** (including metrics, regression testing, and drift detection), the **Stack Overflow dataset** (via the public Stack Exchange API) will serve as the **primary data source** for the core pipeline.
+Its structured, continuously updated Q&A pairs provide an ideal foundation for training and evaluation. The NGO documents remain part of the project as a high-impact demo use-case, showcased via the Streamlit UI, but are not used for automated pipeline evaluation.
+
 
 #### Expected impact: 
 Sharply reduced lead time for corpus updates, measurable reliability via automated gates, full response traceability, and a reusable blueprint applicable to newsrooms, policy analysis, and knowledge bases. 
@@ -110,11 +114,29 @@ flowchart LR
 ```
 
 ## 6. GitHub POC and Data Sources
-- **GitHub POC:** **Existing MVP repository** (local RAG prototype). It will be evolved during the project to include DVC tracking, CI quality gates, Dockerized serving, and cloud deployment.  
-- **Data sources (free & public):**  
-  - Official NGO publications/report pages (e.g., Greenpeace, BUND, WWF, Amnesty).  
-  - Optional context: EU/UN open policy documents.  
-  - Only documents clearly public; store license/source metadata.
+
+### GitHub POC:  
+  The existing MVP will be evolved during the project to include DVC tracking, CI quality gates, Dockerized serving, and cloud deployment.
+
+### 6.1 NGO Documents (Demo Layer)
+The NGO corpus defines the real-world use-case at the heart of this project.  
+It consists of official publications from NGOs (e.g. Greenpeace, Friends of the Earth, WWF) as well as optional policy documents from the EU or UN. Only publicly available sources with appropriate licensing are included.
+
+While highly relevant in practice, NGO reports present challenges for automated evaluation due to the lack of clearly defined golden Q&A pairs.For this reason, they are used primarily as a real-world demo showcase within the Streamlit UI, allowing users to explore verifiable quote retrieval in a domain-specific context.
+
+### 6.2 Stack Overflow Dataset (MLOps Core)
+
+For scalable and measurable MLOps workflows, including evaluation metrics, drift detection, and CI-based regression testing, Golden Q&A pairs and other structured metadata is necessary.
+
+The Stack Overflow dataset, accessed via the public Stack Exchange API, will serve as the **primary data source** for the core pipeline.  
+It provides a continuous stream of timestamped Q&A pairs with metadata for:
+- Generating golden query sets  
+- Evaluating retrieval performance (e.g. Recall@k, nDCG@k)  
+- Running automated regression tests and CI quality gates  
+- Monitoring drift in content, queries, and model behavior over time
+
+This hybrid strategy - using Stack Overflow for MLOps training and NGO data for real-world showcase - ensures technical robustness and training value and at the same time demonstrated the projects practical relevance.
+
 
 ## 7. Risk Assessment and Mitigation Strategies
 - **Licensing/ToS:**  
