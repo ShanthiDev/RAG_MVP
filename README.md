@@ -1,3 +1,6 @@
+**Try the live version of this MVP on Streamlit cloud: https://ragmvp-nsgdjy2zvvqffih8yztzra.streamlit.app/**
+
+
 # Project Proposal - “What do they say? (An MLOps-First RAG System)”
 
 ## 1. Project Title
