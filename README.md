@@ -5,7 +5,7 @@
 
 ## 2. Summary
 ### Goal:  
-The goal is to develop the MVP into a production-grade, MLOps-first RAG system that ingests public NGO documents (e.g., Greenpeace, WWF), retrieves verifiable quotes with page-accurate citations, and exposes them via an API plus a lightweight UI for journalists and policy analysts.
+The goal is to develop the MVP into a production-grade, MLOps-first RAG system that ingests public NGO documents (e.g., Greenpeace, WWF), retrieves verifiable quotes with page-accurate citations, and exposes them via an API plus a lightweight UI for journalists and policy analysts, for training and evaluation purposes the Stack Overflow dataset (via the public Stack Exchange API) will serve as the primary data source.
 
 ### Problem:  
 Positions of NGOs are scattered across PDFs and reports; finding reliable, citable sentences is slow and error-prone.
